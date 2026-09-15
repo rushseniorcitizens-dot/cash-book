@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>Club Cash Book</title>
+<title>Rush Senior Citizens Cash Book</title>
 <style>
   :root{
     --paper: #F2ECD9;
@@ -56,9 +56,10 @@
   }
   .cover-strip h1{
     margin: 0;
-    font-size: 22px;
+    font-size: 19px;
     font-weight: normal;
     letter-spacing: 0.3px;
+    line-height: 1.25;
   }
   .cover-strip .sub{
     font-size: 13px;
@@ -582,7 +583,7 @@ function render(){
     return;
   }
 
-  let html = `<div class="cover-strip"><h1>Club Cash Book</h1><span class="sub">${state.screen === 'history' ? 'All entries' : ''}</span></div>`;
+  let html = `<div class="cover-strip"><h1>Rush Senior Citizens Cash Book</h1><span class="sub">${state.screen === 'history' ? 'All entries' : ''}</span></div>`;
 
   if(state.screen === 'home'){
     html += `
