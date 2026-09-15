@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Club Cash Book</title>
+<style>
+  :root{
+    --paper: #F2ECD9;
+    --paper-line: #D9CCA3;
+    --cover: #1F3D2B;
+    --cover-dark: #16301F;
+    --ink: #1B2A4A;
+    --ink-soft: #4B5670;
+    --brass: #A5761F;
+    --in-color: #2F5233;
+    --in-tint: #E3EBDD;
+    --out-color: #8B2E2E;
+    --out-tint: #F2E1DD;
+    --tile-shadow: rgba(27,42,74,0.14);
+  }
+
+  *{ box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body{
+    margin:0; padding:0; height:100%;
+    background: var(--cover);
+    font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+    color: var(--ink);
+    overscroll-behavior: none;
+    user-select: none;
+  }
+
+  #app{
+    max-width: 560px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--paper);
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0px, transparent 55px,
+      var(--paper-line) 56px
+    );
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  .cover-strip{
+    background: linear-gradient(180deg, var(--cover), var(--cover-dark));
+    color: #EFE7CE;
+    padding: 22px 20px 16px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  .cover-strip h1{
+    margin: 0;
+    font-size: 22px;
+    font-weight: normal;
+    letter-spacing: 0.3px;
+  }
+  .cover-strip .sub{
+    font-size: 13px;
+    color: #C9BE9B;
+    font-family: Georgia, serif;
+  }
+
+  .screen{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 28px 22px 34px;
+  }
+
+  /* ---------- HOME ---------- */
+  .home-title{
+    text-align: center;
+    margin: 6px 0 34px;
+  }
+  .home-title .big{
+    font-size: 26px;
+    color: var(--ink);
+  }
+  .home-title .small{
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+
+  .big-btn{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-family: Georgia, serif;
+    font-size: 24px;
+    padding: 34px 20px;
+    margin-bottom: 20px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 3px 0 var(--tile-shadow);
+    transition: transform 0.06s ease;
+  }
+  .big-btn:active{ transform: translateY(2px); box-shadow: 0 1px 0 var(--tile-shadow); }
+  .big-btn .arrow{ font-size: 20px; opacity: 0.6; }
+
+  .btn-in{ background: var(--in-tint); color: var(--in-color); border: 2px solid var(--in-color); }
+  .btn-out{ background: var(--out-tint); color: var(--out-color); border: 2px solid var(--out-color); }
+
+  .home-footer{
+    margin-top: auto;
+    text-align: center;
+    padding-top: 30px;
+  }
+  .link-btn{
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    font-family: Georgia, serif;
+    font-size: 15px;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 10px;
+  }
+
+  /* ---------- HEADER ROW (category / amount / history) ---------- */
+  .row-header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 22px;
+  }
+  .back-btn{
+    background: none;
+    border: none;
+    font-size: 17px;
+    color: var(--ink);
+    cursor: pointer;
+    padding: 6px 10px 6px 0;
+    font-family: Georgia, serif;
+  }
+  .row-header .title{
+    font-size: 17px;
+    color: var(--ink-soft);
+    flex: 1;
+    text-align: center;
+  }
+  .row-header .title strong{
+    color: var(--ink);
+  }
+  .done-btn{
+    background: none;
+    border: none;
+    font-size: 15px;
+    color: var(--brass);
+    cursor: pointer;
+    font-family: Georgia, serif;
+    text-decoration: underline;
+  }
+
+  .batch-banner{
+    background: #EFE7CE;
+    border: 1px solid var(--paper-line);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 18px;
+    font-size: 14px;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+  .batch-banner strong{ color: var(--ink); }
+
+  /* ---------- CATEGORY GRID ---------- */
+  .cat-grid{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .cat-tile{
+    background: #fff;
+    border: 1.5px solid var(--paper-line);
+    border-radius: 6px;
+    padding: 22px 10px;
+    font-family: Georgia, serif;
+    font-size: 16px;
+    color: var(--ink);
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 2px 0 var(--tile-shadow);
+  }
+  .cat-tile:active{ transform: translateY(1px); box-shadow: none; }
+  .cat-tile.misc{
+    grid-column: 1 / -1;
+    color: var(--brass);
+    border-color: var(--brass);
+    font-style: italic;
+  }
+
+  /* ---------- MISC DESCRIPTION ---------- */
+  .desc-input{
+    width: 100%;
+    font-family: Georgia, serif;
+    font-size: 20px;
+    padding: 18px 16px;
+    border: 1.5px solid var(--ink-soft);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--ink);
+    margin-bottom: 20px;
+  }
+  .desc-input:focus{ outline: 2px solid var(--brass); }
+
+  /* ---------- AMOUNT SCREEN ---------- */
+  .amount-display{
+    text-align: center;
+    font-family: "Courier New", Consolas, monospace;
+    font-size: 46px;
+    color: var(--ink);
+    padding: 18px 0 8px;
+    letter-spacing: 1px;
+  }
+  .amount-display .currency{ color: var(--ink-soft); font-size: 30px; margin-right: 6px; }
+  .amount-date{
+    text-align: center;
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin-bottom: 22px;
+    background: none;
+    border: none;
+    text-decoration: underline;
+    cursor: pointer;
+    font-family: Georgia, serif;
+    width: 100%;
+  }
+  .date-input-wrap{
+    text-align: center;
+    margin-bottom: 18px;
+  }
+  .date-input-wrap input{
+    font-family: Georgia, serif;
+    font-size: 17px;
+    padding: 10px;
+    border: 1.5px solid var(--paper-line);
+    border-radius: 6px;
+  }
+
+  .keypad{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 22px;
+  }
+  .key{
+    background: #fff;
+    border: 1.5px solid var(--paper-line);
+    border-radius: 6px;
+    font-family: "Courier New", Consolas, monospace;
+    font-size: 26px;
+    padding: 18px 0;
+    color: var(--ink);
+    cursor: pointer;
+    box-shadow: 0 2px 0 var(--tile-shadow);
+  }
+  .key:active{ transform: translateY(1px); box-shadow: none; }
+  .key.func{ color: var(--ink-soft); font-family: Georgia, serif; font-size: 20px; }
+
+  .save-btn{
+    margin-top: auto;
+    padding: 22px;
+    font-size: 20px;
+    font-family: Georgia, serif;
+    border: none;
+    border-radius: 6px;
+    background: var(--cover);
+    color: #EFE7CE;
+    cursor: pointer;
+  }
+  .save-btn:disabled{ background: #B9B39A; cursor: default; }
+  .save-btn:active:not(:disabled){ transform: translateY(2px); }
+
+  /* ---------- CONFIRM TOAST ---------- */
+  .toast{
+    position: fixed;
+    left: 50%; bottom: 40px;
+    transform: translateX(-50%);
+    background: var(--cover);
+    color: #EFE7CE;
+    padding: 14px 24px;
+    border-radius: 6px;
+    font-family: Georgia, serif;
+    font-size: 16px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+    z-index: 50;
+    animation: fadeout 1.8s forwards;
+  }
+  @keyframes fadeout{
+    0%{ opacity: 1; }
+    75%{ opacity: 1; }
+    100%{ opacity: 0; }
+  }
+
+  /* ---------- HISTORY ---------- */
+  .summary-cards{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+  .summary-card{
+    background: #fff;
+    border: 1.5px solid var(--paper-line);
+    border-radius: 6px;
+    padding: 12px 6px;
+    text-align: center;
+  }
+  .summary-card .label{ font-size: 11px; color: var(--ink-soft); }
+  .summary-card .value{ font-family: "Courier New", monospace; font-size: 16px; margin-top: 4px; }
+  .summary-card.in .value{ color: var(--in-color); }
+  .summary-card.out .value{ color: var(--out-color); }
+
+  .entry-list{
+    flex: 1;
+    overflow-y: auto;
+  }
+  .entry-row{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 4px;
+    border-bottom: 1px solid var(--paper-line);
+    font-size: 14px;
+  }
+  .entry-row .meta{
+    display: flex;
+    flex-direction: column;
+  }
+  .entry-row .meta .cat{ color: var(--ink); font-family: Georgia, serif; font-size: 15px; }
+  .entry-row .meta .date{ color: var(--ink-soft); font-size: 12px; margin-top: 2px; }
+  .entry-row .amt{
+    font-family: "Courier New", monospace;
+    font-size: 16px;
+  }
+  .entry-row .amt.in{ color: var(--in-color); }
+  .entry-row .amt.out{ color: var(--out-color); }
+  .entry-row .del{
+    background: none; border: none; color: var(--ink-soft);
+    font-size: 13px; text-decoration: underline; cursor: pointer;
+    margin-left: 10px; font-family: Georgia, serif;
+  }
+  .empty-note{
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 15px;
+    margin-top: 40px;
+    font-style: italic;
+  }
+
+  .export-btn{
+    margin-top: 18px;
+    padding: 16px;
+    font-size: 16px;
+    font-family: Georgia, serif;
+    border: 1.5px solid var(--brass);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--brass);
+    cursor: pointer;
+  }
+
+  .note-line{
+    text-align: center;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+const CATEGORIES = [
+  "Membership Dues", "Event Tickets", "Raffle",
+  "Refreshments", "Hall Hire", "Trips & Outings",
+  "Supplies", "Donations"
+];
+
+let state = {
+  screen: 'home',      // home | category | desc | amount | history | settings
+  direction: null,      // 'in' | 'out'
+  category: null,
+  amount: '',
+  date: todayStr(),
+  batchTotal: 0,
+  batchCount: 0,
+  entries: [],
+  loaded: false,
+  webhookUrl: localStorage.getItem('cashbook_webhook') || '',
+  syncing: false
+};
+
+function todayStr(){
+  const d = new Date();
+  return d.toISOString().slice(0,10);
+}
+function fmtDate(iso){
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+function money(n){
+  return n.toFixed(2);
+}
+
+async function loadEntries(){
+  try{
+    const raw = localStorage.getItem('cashbook_entries');
+    state.entries = raw ? JSON.parse(raw) : [];
+  }catch(e){
+    state.entries = [];
+  }
+  state.loaded = true;
+  render();
+}
+
+async function saveEntries(){
+  try{
+    localStorage.setItem('cashbook_entries', JSON.stringify(state.entries));
+  }catch(e){
+    console.error('Could not save', e);
+  }
+}
+
+function goHome(){
+  state.screen = 'home';
+  state.direction = null;
+  state.category = null;
+  state.amount = '';
+  state.batchTotal = 0;
+  state.batchCount = 0;
+  render();
+}
+
+function chooseDirection(dir){
+  state.direction = dir;
+  state.screen = 'category';
+  render();
+}
+
+function chooseCategory(cat){
+  state.category = cat;
+  state.amount = '';
+  state.date = todayStr();
+  if(cat === 'Miscellaneous'){
+    state.screen = 'desc';
+    state.miscDesc = '';
+  } else {
+    state.screen = 'amount';
+  }
+  render();
+}
+
+function keyPress(k){
+  if(k === 'back'){
+    state.amount = state.amount.slice(0, -1);
+  } else if(k === '.'){
+    if(!state.amount.includes('.')) state.amount += '.';
+  } else {
+    if(state.amount.includes('.') && state.amount.split('.')[1].length >= 2) return;
+    if(state.amount === '0') state.amount = k;
+    else state.amount += k;
+  }
+  render();
+}
+
+async function saveEntry(){
+  const val = parseFloat(state.amount);
+  if(!val || val <= 0) return;
+  const entry = {
+    id: Date.now() + '-' + Math.random().toString(36).slice(2,7),
+    direction: state.direction,
+    category: state.category === 'Miscellaneous'
+      ? ('Miscellaneous' + (state.miscDesc ? ' — ' + state.miscDesc : ''))
+      : state.category,
+    amount: val,
+    date: state.date
+  };
+  state.entries.unshift(entry);
+  await saveEntries();
+
+  state.batchTotal += (state.direction === 'in' ? val : -val);
+  state.batchCount += 1;
+
+  state.amount = '';
+  state.category = null;
+  state.miscDesc = '';
+  state.screen = 'category';
+  showToast('Saved ' + (state.direction === 'in' ? '+' : '-') + '€' + money(val));
+  render();
+  syncEntry(entry);
+}
+
+function syncEntry(entry){
+  if(!state.webhookUrl) return;
+  fetch(state.webhookUrl, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(entry)
+  }).catch(() => { /* offline or unreachable — entry is still safe locally */ });
+}
+
+async function syncAllEntries(){
+  if(!state.webhookUrl || state.entries.length === 0) return;
+  state.syncing = true;
+  render();
+  const list = state.entries.slice().reverse(); // oldest first
+  for(const e of list){
+    syncEntry(e);
+    await new Promise(r => setTimeout(r, 250));
+  }
+  state.syncing = false;
+  showToast('Sent ' + list.length + ' entries to Google Sheet');
+  render();
+}
+
+function saveWebhookUrl(){
+  const input = document.getElementById('webhookInput');
+  const url = input.value.trim();
+  state.webhookUrl = url;
+  localStorage.setItem('cashbook_webhook', url);
+  showToast(url ? 'Sync address saved' : 'Sync turned off');
+  render();
+}
+
+function showToast(msg){
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 1800);
+}
+
+async function deleteEntry(id){
+  state.entries = state.entries.filter(e => e.id !== id);
+  await saveEntries();
+  render();
+}
+
+function exportCSV(){
+  let csv = 'Date,Type,Category,Amount\n';
+  state.entries.slice().reverse().forEach(e => {
+    csv += `${e.date},${e.direction === 'in' ? 'Money In' : 'Money Out'},"${e.category.replace(/"/g,'""')}",${e.amount.toFixed(2)}\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'club-cash-book.csv';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function totals(){
+  let totalIn = 0, totalOut = 0;
+  state.entries.forEach(e => {
+    if(e.direction === 'in') totalIn += e.amount;
+    else totalOut += e.amount;
+  });
+  return { totalIn, totalOut, net: totalIn - totalOut };
+}
+
+// ---------- RENDER ----------
+function render(){
+  const app = document.getElementById('app');
+  if(!state.loaded){
+    app.innerHTML = `<div class="screen"><div class="empty-note">Loading…</div></div>`;
+    return;
+  }
+
+  let html = `<div class="cover-strip"><h1>Club Cash Book</h1><span class="sub">${state.screen === 'history' ? 'All entries' : ''}</span></div>`;
+
+  if(state.screen === 'home'){
+    html += `
+    <div class="screen">
+      <div class="home-title">
+        <div class="big">Enter a transaction</div>
+        <div class="small">Choose money in or money out</div>
+      </div>
+      <button class="big-btn btn-in" onclick="chooseDirection('in')">Money In <span class="arrow">›</span></button>
+      <button class="big-btn btn-out" onclick="chooseDirection('out')">Money Out <span class="arrow">›</span></button>
+      <div class="home-footer">
+        <button class="link-btn" onclick="state.screen='history'; render()">View all entries</button>
+      </div>
+    </div>`;
+  }
+
+  else if(state.screen === 'category'){
+    html += `
+    <div class="screen">
+      <div class="row-header">
+        <button class="back-btn" onclick="goHome()">‹ Home</button>
+        <div class="title">${state.direction === 'in' ? 'Money In' : 'Money Out'}</div>
+        <button class="done-btn" onclick="goHome()">Done</button>
+      </div>
+      ${state.batchCount > 0 ? `<div class="batch-banner">This batch: <strong>${state.batchCount} ${state.batchCount === 1 ? 'entry' : 'entries'}</strong>, net <strong>${state.batchTotal >= 0 ? '+' : '-'}€${money(Math.abs(state.batchTotal))}</strong></div>` : ''}
+      <div class="cat-grid">
+        ${CATEGORIES.map(c => `<button class="cat-tile" onclick="chooseCategory('${c}')">${c}</button>`).join('')}
+        <button class="cat-tile misc" onclick="chooseCategory('Miscellaneous')">Miscellaneous</button>
+      </div>
+    </div>`;
+  }
+
+  else if(state.screen === 'desc'){
+    html += `
+    <div class="screen">
+      <div class="row-header">
+        <button class="back-btn" onclick="state.screen='category'; render()">‹ Back</button>
+        <div class="title">Miscellaneous</div>
+        <span style="width:50px"></span>
+      </div>
+      <div class="small" style="text-align:center; color:var(--ink-soft); margin-bottom:14px;">What's this for?</div>
+      <input class="desc-input" id="miscInput" placeholder="e.g. Bus hire deposit" autofocus>
+      <button class="save-btn" onclick="submitDesc()">Continue</button>
+    </div>`;
+  }
+
+  else if(state.screen === 'amount'){
+    html += `
+    <div class="screen">
+      <div class="row-header">
+        <button class="back-btn" onclick="state.screen='category'; render()">‹ Back</button>
+        <div class="title"><strong>${state.category === 'Miscellaneous' ? 'Misc' : state.category}</strong></div>
+        <button class="done-btn" onclick="goHome()">Done</button>
+      </div>
+      <div class="amount-display"><span class="currency">€</span>${state.amount || '0'}</div>
+      <button class="amount-date" onclick="toggleDateEdit()">${state.editingDate ? '' : fmtDate(state.date) + '  (change)'}</button>
+      ${state.editingDate ? `<div class="date-input-wrap"><input type="date" value="${state.date}" onchange="setDate(this.value)"></div>` : ''}
+      <div class="keypad">
+        ${['7','8','9','4','5','6','1','2','3','.','0'].map(k => `<button class="key" onclick="keyPress('${k}')">${k}</button>`).join('')}
+        <button class="key func" onclick="keyPress('back')">⌫</button>
+      </div>
+      <button class="save-btn" ${(!state.amount || parseFloat(state.amount) <= 0) ? 'disabled' : ''} onclick="saveEntry()">Save entry</button>
+    </div>`;
+  }
+
+  else if(state.screen === 'history'){
+    const t = totals();
+    html += `
+    <div class="screen">
+      <div class="row-header">
+        <button class="back-btn" onclick="goHome()">‹ Home</button>
+        <div class="title">All entries</div>
+        <span style="width:50px"></span>
+      </div>
+      <div class="summary-cards">
+        <div class="summary-card in"><div class="label">Total In</div><div class="value">€${money(t.totalIn)}</div></div>
+        <div class="summary-card out"><div class="label">Total Out</div><div class="value">€${money(t.totalOut)}</div></div>
+        <div class="summary-card"><div class="label">Net</div><div class="value">€${money(t.net)}</div></div>
+      </div>
+      <div class="entry-list">
+        ${state.entries.length === 0 ? '<div class="empty-note">No entries yet</div>' :
+          state.entries.map(e => `
+            <div class="entry-row">
+              <div class="meta">
+                <span class="cat">${e.category}</span>
+                <span class="date">${fmtDate(e.date)}</span>
+              </div>
+              <div style="display:flex; align-items:center;">
+                <span class="amt ${e.direction}">${e.direction === 'in' ? '+' : '-'}€${money(e.amount)}</span>
+                <button class="del" onclick="deleteEntry('${e.id}')">remove</button>
+              </div>
+            </div>
+          `).join('')}
+      </div>
+      <button class="export-btn" onclick="exportCSV()">Export as spreadsheet (CSV)</button>
+      <div class="note-line">Open the exported file in Excel or Google Sheets to build a profit &amp; loss.</div>
+      <div class="home-footer">
+        <button class="link-btn" onclick="state.screen='settings'; render()">${state.webhookUrl ? 'Google Sheet sync is on' : 'Set up Google Sheet sync'}</button>
+      </div>
+    </div>`;
+  }
+
+  else if(state.screen === 'settings'){
+    html += `
+    <div class="screen">
+      <div class="row-header">
+        <button class="back-btn" onclick="state.screen='history'; render()">‹ Back</button>
+        <div class="title">Google Sheet sync</div>
+        <span style="width:50px"></span>
+      </div>
+      <div class="small" style="color:var(--ink-soft); font-size:14px; margin-bottom:16px; line-height:1.5;">
+        Paste the Apps Script web app URL here. Once saved, every new entry is sent to your Google Sheet automatically — no sign-in needed on this tablet.
+      </div>
+      <input class="desc-input" id="webhookInput" placeholder="https://script.google.com/macros/s/.../exec" value="${state.webhookUrl}">
+      <button class="save-btn" onclick="saveWebhookUrl()">Save address</button>
+      <button class="export-btn" style="margin-top:14px;" ${(!state.webhookUrl || state.syncing) ? 'disabled' : ''} onclick="syncAllEntries()">${state.syncing ? 'Sending…' : 'Send all entries now'}</button>
+      <div class="note-line">Use this if you want to push everything already entered, not just new entries.</div>
+    </div>`;
+  }
+
+  app.innerHTML = html;
+
+  if(state.screen === 'desc'){
+    const input = document.getElementById('miscInput');
+    if(input) input.focus();
+  }
+}
+
+function submitDesc(){
+  const input = document.getElementById('miscInput');
+  state.miscDesc = input.value.trim();
+  state.screen = 'amount';
+  render();
+}
+
+function toggleDateEdit(){
+  state.editingDate = !state.editingDate;
+  render();
+}
+function setDate(v){
+  state.date = v;
+  state.editingDate = false;
+  render();
+}
+
+loadEntries();
+</script>
+</body>
+</html>
